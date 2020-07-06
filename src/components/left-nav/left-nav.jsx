@@ -1,25 +1,53 @@
 import React, { Component } from "react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, withRouter } from "react-router-dom";
 
 import "./index.css";
 import logo from "../../assets/images/logo.png";
+import menuConfig from "../../config/menuConfig";
 
 import { Menu } from "antd";
-import {
-  AppstoreOutlined,
-  PieChartOutlined,
-  DesktopOutlined,
-  ContainerOutlined,
-  MailOutlined,
-} from "@ant-design/icons";
+import { PieChartOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 const { SubMenu } = Menu;
 
-export default class LeftNav extends Component {
+class LeftNav extends Component {
+  showItem = (menuList) => {
+    return menuList.map((item) => {
+      if (!item.children) {
+        return (
+          <Menu.Item key={item.key} icon={<PieChartOutlined />}>
+            <NavLink to={item.key}>{item.title}</NavLink>
+          </Menu.Item>
+        );
+      } else {
+        const path = this.props.location.pathname;
+        const it = item.children.find((item) => path.indexOf(item.key)===0);
+        if (it) {
+          this.openKey = item.key;
+        }
+        return (
+          <SubMenu
+            key={item.key}
+            icon={<AppstoreOutlined />}
+            title={item.title}
+          >
+            {this.showItem(item.children)}
+          </SubMenu>
+        );
+      }
+    });
+  };
 
-
+  UNSAFE_componentWillMount() {
+    this.menuList = this.showItem(menuConfig);
+  }
   render() {
+    //得到当前请求的路由路径
+    let path = this.props.location.pathname;
+    if (path.indexOf("/product") === 0) {
+      path = "/product";
+    }
     return (
       <div>
         <NavLink className="left-nav" to="/">
@@ -29,33 +57,15 @@ export default class LeftNav extends Component {
           </header>
         </NavLink>
         <Menu
-          defaultSelectedKeys={["1"]}
-          defaultOpenKeys={["sub1"]}
+          selectedKeys={[path]}
+          defaultOpenKeys={[this.openKey]}
           mode="inline"
           theme="dark"
         >
-          <Menu.Item key="1" icon={<PieChartOutlined />}>
-            首页
-          </Menu.Item>
-
-          <SubMenu key="sub1" icon={<MailOutlined />} title="商品">
-            <Menu.Item key="5">品类管理</Menu.Item>
-            <Menu.Item key="6">商品管理</Menu.Item>
-          </SubMenu>
-          <SubMenu
-            key="sub2"
-            icon={<AppstoreOutlined />}
-            title="Navigation Two"
-          >
-            <Menu.Item key="9">Option 9</Menu.Item>
-            <Menu.Item key="10">Option 10</Menu.Item>
-            <SubMenu key="sub3" title="Submenu">
-              <Menu.Item key="11">Option 11</Menu.Item>
-              <Menu.Item key="12">Option 12</Menu.Item>
-            </SubMenu>
-          </SubMenu>
+          {this.menuList}
         </Menu>
       </div>
     );
   }
 }
+export default withRouter(LeftNav);
