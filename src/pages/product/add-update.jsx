@@ -1,16 +1,20 @@
 import React, { Component } from "react";
-import { Card, Form, Input, Cascader,  Button } from "antd";
+import { Card, Form, Input, Cascader, Button } from "antd";
 import { reqCategorys } from "../../api";
-import PicturesWall from "./pictures-wall" 
-
+import PicturesWall from "./pictures-wall";
 
 const Item = Form.Item;
 const { TextArea } = Input;
 // 默认子路由组件
 
 export default class AddUpdate extends Component {
+  constructor(props) {
+    super(props);
+    this.myRef = React.createRef();
+  }
   handleSubmit = (value) => {
-    console.log(value);
+    const imgs = this.myRef.current.getImages();
+    console.log(value, imgs);
   };
   state = {
     options: [],
@@ -175,11 +179,9 @@ export default class AddUpdate extends Component {
           </Item>
 
           <Item name="pics" label="商品图片">
-            <PicturesWall></PicturesWall>
+            <PicturesWall ref={this.myRef} imgs={product.imgs}></PicturesWall>
           </Item>
-          <Item name="detail" label="商品详情">
-            <div></div>
-          </Item>
+
           <Button type="primary" htmlType="submit">
             提交
           </Button>

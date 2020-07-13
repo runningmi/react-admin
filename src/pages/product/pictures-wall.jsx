@@ -1,6 +1,7 @@
 import React from "react";
-import { Upload, Modal } from "antd";
+import { Upload, Modal,message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
+import {reqDeleteImg} from '../../api'
 
 function getBase64(file) {
   return new Promise((resolve, reject) => {
@@ -16,10 +17,12 @@ export default class PicturesWall extends React.Component {
     previewVisible: false,
     previewImage: "",
     previewTitle: "",
-    fileList: [
-     
-    ],
+    fileList: [],
   };
+
+  getImages=()=>{
+    return this.state.fileList.map((file)=>file.name)
+  }
 
   handleCancel = () => this.setState({ previewVisible: false });
 
@@ -36,19 +39,24 @@ export default class PicturesWall extends React.Component {
     });
   };
 
-//   监视上传过程
-  handleChange = ({ file, fileList }) => {
-      if(file.status==="done"){
-          const result = file.response
-          if(result.status===0){
-              const {name ,url } = result.data
-              file = fileList[fileList.length-1]
-              file.name= name
-              file.url= url
-
-          }
+  //   监视上传过程
+  handleChange =async  ({ file, fileList }) => {
+    if (file.status === "done") {
+      const result = file.response;
+      if (result.status === 0) {
+        const { name, url } = result.data;
+        file = fileList[fileList.length - 1];
+        file.name = name;
+        file.url = url;
       }
-    this.setState({ fileList });}
+    }else if(file.status === "removed"){
+     const result = await reqDeleteImg(file.name)
+     if(result.status===0){
+       message.success("删除成功")
+     }
+    }
+    this.setState({ fileList });
+  };
 
   render() {
     const { previewVisible, previewImage, fileList, previewTitle } = this.state;

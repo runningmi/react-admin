@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
 
 import { NavLink, withRouter } from "react-router-dom";
 
@@ -11,36 +11,52 @@ import { PieChartOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 const { SubMenu } = Menu;
 
-class LeftNav extends Component {
+class LeftNav extends PureComponent {
+  hasAuth = (item) => {
+    if (!item.children  ) {
+      console.log([...this.props.menus])
+      return !!this.props.menus.find((menu) => item.key === menu);
+    } else {
+      return !!item.children.find((child) => this.props.menus.indexOf(child.key)!==-1)
+    }
+  };
   showItem = (menuList) => {
     return menuList.map((item) => {
-      if (!item.children) {
-        return (
-          <Menu.Item key={item.key} icon={<PieChartOutlined />}>
-            <NavLink to={item.key}>{item.title}</NavLink>
-          </Menu.Item>
-        );
-      } else {
-        const path = this.props.location.pathname;
-        const it = item.children.find((item) => path.indexOf(item.key)===0);
-        if (it) {
-          this.openKey = item.key;
-        }
-        return (
-          <SubMenu
-            key={item.key}
-            icon={<AppstoreOutlined />}
-            title={item.title}
-          >
-            {this.showItem(item.children)}
-          </SubMenu>
-        );
+      // if (this.hasAuth(item)) {
+        if (!item.children) {
+          return (
+            <Menu.Item key={item.key} icon={<PieChartOutlined />}>
+              <NavLink to={item.key}>{item.title}</NavLink>
+            </Menu.Item>
+          );
+        // }
+       }
+
+        // if (this.hasAuth(item)) {
+        if (item.children){
+          const path = this.props.location.pathname;
+          const it = item.children.find((item) => path.indexOf(item.key) === 0);
+          if (it) {
+            this.openKey = item.key;
+          }
+          return (
+            <SubMenu
+              key={item.key}
+              icon={<AppstoreOutlined />}
+              title={item.title}
+            >
+              {this.showItem(item.children)}
+            </SubMenu>
+          );
+        // }
       }
     });
   };
 
   UNSAFE_componentWillMount() {
     this.menuList = this.showItem(menuConfig);
+
+    // this.menuList = this.showItem(menuConfig);
   }
   render() {
     //得到当前请求的路由路径
